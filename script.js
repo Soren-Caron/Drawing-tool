@@ -12,7 +12,7 @@ for (let i = 0; i < 140; i++) {
     column.appendChild(row);
   }
 }
-let isMouseDown = false;
+let isPointerDown = false;
 let isErasing = false;
 let selectedColor = "hsl(0, 100%, 50%)"; // Default color (Red)
 
@@ -24,23 +24,21 @@ rows.forEach((row) => {
   row.dataset.originalColor = "hsl(0, 0%, 100%)"; // White as the original color
 });
 
-// When the mouse is pressed down, set the flag to true
-document.addEventListener("mousedown", (event) => {
-  isMouseDown = true;
+// Handle pointer down (for mouse and touch devices)
+document.addEventListener("pointerdown", (event) => {
+  isPointerDown = true;
 
   // Check if the right mouse button is pressed for erasing
-  if (event.button === 2) {
-    isErasing = true;
-  }
+  isErasing = event.button === 2;
 });
 
-// When the mouse is released, set the flags to false
-document.addEventListener("mouseup", () => {
-  isMouseDown = false;
+// Handle pointer up (reset flags)
+document.addEventListener("pointerup", () => {
+  isPointerDown = false;
   isErasing = false;
 });
 
-// Prevent the default context menu on right-click
+// Prevent the default context menu on right-click (for desktops)
 document.addEventListener("contextmenu", (event) => event.preventDefault());
 
 // Handle color selection from the palette
@@ -50,15 +48,24 @@ colorButtons.forEach((btn) => {
   });
 });
 
-// Add a hover effect that triggers only when the mouse is pressed down
+// Add a pointer move event to color rows as you drag
 rows.forEach((row) => {
-  row.addEventListener("mouseover", () => {
-    if (isMouseDown) {
+  row.addEventListener("pointermove", () => {
+    if (isPointerDown) {
       if (isErasing) {
         row.style.backgroundColor = row.dataset.originalColor; // Restore the original color
       } else {
         row.style.backgroundColor = selectedColor; // Apply the selected color
       }
+    }
+  });
+  
+  // Ensure the initial click also colors the tile
+  row.addEventListener("pointerdown", () => {
+    if (isErasing) {
+      row.style.backgroundColor = row.dataset.originalColor; // Restore the original color
+    } else {
+      row.style.backgroundColor = selectedColor; // Apply the selected color
     }
   });
 });
